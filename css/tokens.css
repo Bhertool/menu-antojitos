@@ -1,0 +1,37 @@
+/* Paleta 60-30-10 basada en la carta oficial con oklch() + light-dark() */
+:root {
+    color-scheme: light dark;
+
+  /* 60% Superficies dominantes (Crema artesanal / Cacao profundo) */
+    --bg-page: light-dark(oklch(0.975 0.018 82), oklch(0.18 0.022 48));
+    --bg-surface: light-dark(oklch(0.992 0.010 82), oklch(0.23 0.024 48));
+    --bg-elevated: light-dark(oklch(0.955 0.022 78), oklch(0.27 0.026 48));
+
+  /* 30% Identidad y estructura (Café tostado / Crema cálida) */
+    --ink-primary: light-dark(oklch(0.30 0.068 45), oklch(0.94 0.020 80));
+    --ink-secondary: light-dark(oklch(0.46 0.048 48), oklch(0.76 0.026 74));
+    --border-subtle: color-mix(in oklch, var(--ink-primary) 12%, transparent);
+
+  /* 10% Acento estratégico (Caramelo dorado para precios, activos y CTAs) */
+    --accent: light-dark(oklch(0.62 0.125 62), oklch(0.74 0.125 68));
+    --accent-soft: color-mix(in oklch, var(--accent) 14%, transparent);
+    --accent-ink: light-dark(oklch(0.99 0.008 82), oklch(0.17 0.022 48));
+    --danger: light-dark(oklch(0.54 0.16 26), oklch(0.68 0.15 26));
+
+  /* Tipografía y escala */
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --max-width: 680px;
+    --shadow-sheet: 0 -10px 40px color-mix(in oklch, black 35%, transparent);
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+}
