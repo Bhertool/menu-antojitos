@@ -153,14 +153,16 @@ price.textContent = formatCOP(item.precio);
 status.hidden = item.disponible;
 
 if (item.foto_url) {
-    img.src = item.foto_url;
-    img.alt = item.nombre;
-    media.hidden = false;
-    img.onerror = () => { media.hidden = true; };
-} else {
-    media.hidden = true;
-    img.removeAttribute('src');
-}
+        img.src = item.foto_url;
+        img.alt = item.nombre;
+        media.style.setProperty('--photo-bg', `url("${item.foto_url}")`);
+        media.hidden = false;
+        img.onerror = () => { media.hidden = true; };
+    } else {
+        media.hidden = true;
+        media.style.removeProperty('--photo-bg');
+        img.removeAttribute('src');
+    }
 
 if (item.descripcion) {
     desc.textContent = item.descripcion;
