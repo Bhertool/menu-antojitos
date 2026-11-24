@@ -16,11 +16,28 @@
 </head>
 <body>
   <header class="hero">
-    <svg class="hero__steam" viewBox="0 0 120 90" fill="none" aria-hidden="true">
-        <path class="steam-line steam-line--1" d="M34 84 C26 64, 42 48, 32 28 C26 16, 34 8, 38 4" />
-        <path class="steam-line steam-line--2" d="M62 86 C72 64, 52 46, 64 24 C70 14, 62 6, 58 2" />
-        <path class="steam-line steam-line--3" d="M88 82 C80 64, 94 48, 86 30 C82 20, 88 12, 92 6" />
-    </svg>
+    <div class="hero__steam" aria-hidden="true">
+        <!-- Filtros compartidos: ruido fractal deforma la voluta y luego se difumina -->
+        <svg class="steam-defs" width="0" height="0" focusable="false">
+            <defs>
+                <filter id="steam-a" filterUnits="userSpaceOnUse" x="-40" y="-40" width="140" height="180" color-interpolation-filters="sRGB">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.011 0.032" numOctaves="2" seed="4" result="n" />
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="13" xChannelSelector="R" yChannelSelector="G" result="d" />
+                    <feGaussianBlur in="d" stdDeviation="3.4" />
+                </filter>
+                <filter id="steam-b" filterUnits="userSpaceOnUse" x="-40" y="-40" width="140" height="180" color-interpolation-filters="sRGB">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.009 0.028" numOctaves="2" seed="11" result="n" />
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="16" xChannelSelector="R" yChannelSelector="G" result="d" />
+                    <feGaussianBlur in="d" stdDeviation="4" />
+                </filter>
+            </defs>
+        </svg>
+
+        <span class="wisp wisp--1"><svg viewBox="0 0 60 100"><path d="M30 98 C16 80 44 66 30 48 C18 32 40 20 30 4" filter="url(#steam-a)" /></svg></span>
+        <span class="wisp wisp--2"><svg viewBox="0 0 60 100"><path d="M28 98 C42 82 14 68 28 50 C40 34 18 18 30 4" filter="url(#steam-b)" /></svg></span>
+        <span class="wisp wisp--3"><svg viewBox="0 0 60 100"><path d="M30 98 C20 78 42 62 32 44 C24 30 38 16 30 4" filter="url(#steam-a)" /></svg></span>
+        <span class="wisp wisp--4"><svg viewBox="0 0 60 100"><path d="M32 98 C44 84 18 70 30 52 C40 38 22 22 30 4" filter="url(#steam-b)" /></svg></span>
+    </div>
 
     <div class="hero__top">
       <div class="brand">

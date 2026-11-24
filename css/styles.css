@@ -492,21 +492,6 @@ body {
     z-index: 2;
 }
 
-.sheet__media {
-    margin: 0;
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    overflow: hidden;
-    background: var(--bg-elevated);
-
-    & img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-}
-
 .sheet__body {
     padding: 1.15rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
 }
@@ -612,55 +597,92 @@ body {
     }
 }
 
-/* Vapor artesanal sutil en el encabezado */
+/* Vapor del encabezado: volutas suaves que suben, se expanden y se disuelven */
 .hero__steam {
+    /* Crema cálida en modo oscuro (se ve como vapor), caramelo en modo claro */
+    --steam-color: light-dark(oklch(0.60 0.12 62), oklch(0.92 0.035 82));
+
     position: absolute;
-    top: -4px;
+    top: 0;
     right: 3.4rem;
-    width: 96px;
-    height: 74px;
+    width: 104px;
+    height: 92px;
+    color: var(--steam-color);
     pointer-events: none;
     z-index: 0;
-    opacity: 0.42;
+    /* Arriba y abajo se desvanece: nunca se corta en seco contra un borde */
+    -webkit-mask-image: linear-gradient(to top, transparent 0, #000 16%, #000 48%, transparent);
+    mask-image: linear-gradient(to top, transparent 0, #000 16%, #000 48%, transparent);
+
+    & .steam-defs {
+        position: absolute;
+    }
 }
 
-.steam-line {
-    stroke: var(--accent);
-    stroke-width: 1.6;
-    stroke-linecap: round;
-    stroke-dasharray: 95;
-    stroke-dashoffset: 95;
+.wisp {
+    position: absolute;
+    bottom: 4px;
+    left: var(--x);
+    width: var(--w);
+    height: 80px;
     opacity: 0;
-    animation: steam-rise 5.4s ease-in-out infinite;
+    transform-origin: 50% 100%;
+    will-change: transform, opacity;
+    animation: steam-rise var(--dur) cubic-bezier(0.3, 0.1, 0.5, 1) var(--delay) infinite;
+
+    & svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        transform-origin: 50% 100%;
+        animation: steam-sway var(--sway, 3.4s) ease-in-out infinite alternate;
+    }
+
+    & path {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 9;
+        stroke-linecap: round;
+    }
 }
 
-.steam-line--2 {
-    animation-delay: 1.6s;
-    stroke-width: 1.3;
-}
-
-.steam-line--3 {
-    animation-delay: 3.1s;
-    stroke-width: 1.2;
-}
+/* Delays negativos: el humo ya está en movimiento al cargar la página */
+.wisp--1 { --x: 6px;  --w: 34px; --dur: 6.2s; --delay: 0s;    --peak: 0.42; --sway: 3.2s; }
+.wisp--2 { --x: 34px; --w: 40px; --dur: 7.4s; --delay: -2.4s; --peak: 0.36; --sway: 3.9s; }
+.wisp--3 { --x: 64px; --w: 30px; --dur: 5.8s; --delay: -3.9s; --peak: 0.40; --sway: 2.9s; }
+.wisp--4 { --x: 20px; --w: 28px; --dur: 8.2s; --delay: -5.6s; --peak: 0.28; --sway: 4.4s; }
 
 @keyframes steam-rise {
     0% {
-        stroke-dashoffset: 95;
-        transform: translateY(8px);
+        transform: translateY(0) scale(0.7, 0.6);
         opacity: 0;
     }
-    25% {
-        opacity: 0.55;
+    18% {
+        opacity: var(--peak, 0.4);
     }
-    70% {
-        stroke-dashoffset: 0;
-        opacity: 0.32;
+    65% {
+        opacity: calc(var(--peak, 0.4) * 0.55);
     }
     100% {
-        stroke-dashoffset: -40;
-        transform: translateY(-10px);
+        transform: translateY(-52px) scale(1.3, 1.12);
         opacity: 0;
+    }
+}
+
+@keyframes steam-sway {
+    from { transform: translateX(-4px) rotate(-3deg); }
+    to   { transform: translateX(5px) rotate(4deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wisp,
+    .wisp svg {
+        animation: none;
+    }
+
+    .wisp {
+        opacity: 0.16;
     }
 }
 
