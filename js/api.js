@@ -1,5 +1,7 @@
 import { CONFIG } from './config.js';
 
+const FETCH_TIMEOUT_MS = 15000;
+
 export function readCachedMenu() {
 try {
     const raw = localStorage.getItem(CONFIG.CACHE_KEY);
@@ -16,12 +18,27 @@ if (!CONFIG.API_URL || CONFIG.API_URL.includes('PEGA_AQUI')) {
     throw new Error('Falta configurar API_URL en js/config.js');
 }
 
-const response = await fetch(CONFIG.API_URL, { cache: 'no-store' });
-if (!response.ok) {
-    throw new Error(`Error HTTP ${response.status}`);
+// Con señal mala una petición puede quedarse colgada para siempre:
+// se corta a los 15 s para poder mostrar el error o la carta guardada.
+const controller = new AbortController();
+const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+let data;
+try {
+    const response = await fetch(CONFIG.API_URL, { cache: 'no-store', signal: controller.signal });
+    if (!response.ok) {
+        throw new Error(`Error HTTP ${response.status}`);
+    }
+    data = await response.json();
+} catch (err) {
+    if (err.name === 'AbortError') {
+        throw new Error('La carta tardó demasiado en responder');
+    }
+    throw err;
+} finally {
+    clearTimeout(timer);
 }
 
-const data = await response.json();
 if (!data.ok || !Array.isArray(data.items)) {
     throw new Error(data.error || 'Respuesta inválida del servidor');
 }

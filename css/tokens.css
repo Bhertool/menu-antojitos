@@ -12,8 +12,10 @@
     --ink-secondary: light-dark(oklch(0.46 0.048 48), oklch(0.76 0.026 74));
     --border-subtle: color-mix(in oklch, var(--ink-primary) 12%, transparent);
 
-  /* 10% Acento estratégico (Caramelo dorado para precios, activos y CTAs) */
-    --accent: light-dark(oklch(0.62 0.125 62), oklch(0.74 0.125 68));
+  /* 10% Acento estratégico (Caramelo dorado para precios, activos y CTAs).
+     En modo claro el caramelo se oscurece (L 0.62 → 0.54): antes daba ~3.5:1 sobre
+     la crema, ahora ~5:1, que cumple WCAG AA para precios y botones. */
+    --accent: light-dark(oklch(0.54 0.12 60), oklch(0.74 0.125 68));
     --accent-soft: color-mix(in oklch, var(--accent) 14%, transparent);
     --accent-ink: light-dark(oklch(0.99 0.008 82), oklch(0.17 0.022 48));
     --danger: light-dark(oklch(0.54 0.16 26), oklch(0.68 0.15 26));
@@ -25,7 +27,10 @@
     --radius-md: 16px;
     --radius-lg: 24px;
     --max-width: 680px;
-    --shadow-sheet: 0 -10px 40px color-mix(in oklch, black 35%, transparent);
+    --shadow-sheet: 0 -10px 40px light-dark(
+        color-mix(in oklch, oklch(0.3 0.07 45) 22%, transparent),
+        color-mix(in oklch, black 35%, transparent)
+    );
 }
 
 :root[data-theme="light"] {

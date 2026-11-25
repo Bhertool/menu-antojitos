@@ -182,9 +182,7 @@ body {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    margin: 0.35rem 0 0.6rem;
-    padding-bottom: 0.35rem;
-    border-bottom: 1px solid var(--border-subtle);
+    margin: 0.35rem 0 0.3rem;
 
     & h2 {
         margin: 0;

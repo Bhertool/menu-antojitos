@@ -3,16 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#23140c">
+  <meta name="theme-color" content="#fdf6ea" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1a0f09" media="(prefers-color-scheme: dark)">
   <title>Antojitos y Algo Más — Carta Digital</title>
-  <meta name="description" content="Carta digital oficial de Antojitos y Algo Más — Un lugar para tardear en La Habana, Guadalajara de Buga.">
+  <meta name="description" content="Carta digital de Antojitos y Algo Más — Un lugar para tardear en La Habana, Guadalajara de Buga. Mira la carta y pide por WhatsApp.">
+  <link rel="canonical" href="https://bhertool.github.io/menu-antojitos/">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Vista previa al compartir el enlace (WhatsApp, Instagram, Facebook, etc.).
+       WhatsApp exige URL absoluta en og:image; si cambias de dominio, actualízala. -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_CO">
+  <meta property="og:site_name" content="Antojitos y Algo Más">
+  <meta property="og:title" content="Antojitos y Algo Más — Carta digital">
+  <meta property="og:description" content="Un lugar para tardear · La Habana, Buga. Mira la carta y pide por WhatsApp.">
+  <meta property="og:url" content="https://bhertool.github.io/menu-antojitos/">
+  <meta property="og:image" content="https://bhertool.github.io/menu-antojitos/assets/img/og-card.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Antojitos y Algo Más — Un lugar para tardear. Carta digital.">
+  <meta name="twitter:card" content="summary_large_image">
 
+  <!-- Tema guardado: se aplica antes de pintar para evitar el parpadeo oscuro → claro -->
+  <script>
+    try {
+      var t = localStorage.getItem('antojitos_theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+
+  <!-- Con señal débil: fuentes propias (sin Google), precarga y conexión anticipada a la API -->
+  <link rel="preload" href="assets/fonts/fraunces-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/plus-jakarta-sans-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/plus-jakarta-sans-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="modulepreload" href="js/config.js">
+  <link rel="modulepreload" href="js/api.js">
+  <link rel="modulepreload" href="js/ui.js">
+  <link rel="modulepreload" href="js/cart.js">
+  <link rel="modulepreload" href="js/order.js">
+
+  <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <header class="hero">
@@ -46,6 +82,9 @@
           class="brand__logo"
           src="assets/img/logo.webp"
           alt="Logo Antojitos y Algo Más"
+          width="48"
+          height="48"
+          decoding="async"
           hidden
         >
         <div class="brand__text">
@@ -107,7 +146,7 @@
       <a id="instagramLink" class="social-pill" target="_blank" rel="noopener noreferrer">Instagram</a>
     </div>
 
-    <p class="footer-note">Toca cualquier producto para ver ingredientes, opciones y fotografía.</p>
+    <p class="footer-note">Toca un producto para ver los detalles. Usa el + para armar tu pedido y envíalo por WhatsApp.</p>
   </footer>
 
   <!-- Bottom sheet nativo de detalle -->
@@ -117,6 +156,7 @@
 
     <figure id="sheetMedia" class="sheet__media" hidden>
       <img id="sheetImg" src="" alt="" loading="lazy">
+      <div class="sheet__media-empty" aria-hidden="true"><i></i><span>Foto próximamente</span></div>
     </figure>
 
     <div class="sheet__body">
@@ -133,9 +173,73 @@
       <p id="sheetDesc" class="sheet__desc" hidden></p>
 
       <div id="sheetOptionsWrap" class="sheet__options" hidden>
-        <span class="sheet__options-label">Opciones disponibles</span>
+        <span id="sheetOptionsLabel" class="sheet__options-label">Opciones disponibles</span>
         <div id="sheetOptions" class="chip-group"></div>
       </div>
+    </div>
+
+    <div class="sheet__order">
+      <div class="stepper" role="group" aria-label="Cantidad">
+        <button id="qtyMinus" type="button" aria-label="Quitar uno">−</button>
+        <output id="qtyValue" aria-live="polite">1</output>
+        <button id="qtyPlus" type="button" aria-label="Agregar uno">+</button>
+      </div>
+      <button id="addToCartBtn" class="btn-accent btn-accent--block" type="button">Agregar al pedido</button>
+    </div>
+  </dialog>
+
+  <!-- Barra flotante del pedido (aparece al agregar el primer producto) -->
+  <button id="cartBar" class="cart-bar" type="button" hidden>
+    <span class="cart-bar__count" id="cartCount">0</span>
+    <span class="cart-bar__label">Ver pedido</span>
+    <span class="cart-bar__total" id="cartTotal">$0</span>
+  </button>
+
+  <!-- Hoja del pedido: resumen + datos del cliente → mensaje de WhatsApp -->
+  <dialog id="cartDialog" class="sheet" aria-labelledby="cartTitle">
+    <div class="sheet__handle" aria-hidden="true"></div>
+    <div class="cart-head">
+      <h2 id="cartTitle">Tu pedido</h2>
+      <button id="closeCartBtn" class="cart-close" type="button" aria-label="Cerrar pedido">✕</button>
+    </div>
+
+    <div class="cart-body">
+      <ul id="cartLines" class="cart-lines"></ul>
+      <p id="cartWarning" class="cart-warning" role="alert" hidden></p>
+
+      <form id="orderForm" class="order-form">
+        <fieldset class="service-group">
+          <legend>¿Cómo lo quieres?</legend>
+          <label class="service-option"><input type="radio" name="service" value="aqui" checked><span>Comer aquí</span></label>
+          <label class="service-option"><input type="radio" name="service" value="llevar"><span>Para llevar</span></label>
+          <label class="service-option"><input type="radio" name="service" value="domicilio"><span>Domicilio</span></label>
+        </fieldset>
+
+        <label class="field">
+          <span>Tu nombre</span>
+          <input name="name" type="text" required maxlength="40" autocomplete="given-name" placeholder="Ej: Ana">
+        </label>
+
+        <label class="field" id="detailField">
+          <span id="detailLabel">Mesa o referencia (opcional)</span>
+          <input name="detail" type="text" maxlength="120">
+        </label>
+
+        <label class="field">
+          <span>Notas (opcional)</span>
+          <textarea name="notes" rows="2" maxlength="240" placeholder="Sin cebolla, bien tostado…"></textarea>
+        </label>
+
+        <div class="order-total">
+          <span>Total productos</span>
+          <strong id="orderTotal">$0</strong>
+        </div>
+
+        <button id="sendOrderBtn" class="btn-accent btn-accent--block" type="submit">Enviar pedido por WhatsApp</button>
+        <p class="order-note">Se abre WhatsApp con tu pedido ya escrito: solo toca enviar. El negocio confirma el domicilio y el pago por ese chat.</p>
+        <p id="sentNote" class="order-note" role="status" hidden>Listo: revisa el mensaje en WhatsApp y envíalo. Si no se abrió, intenta de nuevo.</p>
+        <button id="clearCartBtn" class="link-btn" type="button">Vaciar pedido</button>
+      </form>
     </div>
   </dialog>
 
