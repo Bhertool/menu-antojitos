@@ -9,7 +9,7 @@
  * Si haces un cambio grande de código (varios archivos a la vez), sube VERSION
  * para que todos los visitantes reciban el conjunto completo y consistente.
  */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL_CACHE = `antojitos-shell-${VERSION}`;
 const IMAGE_CACHE = 'antojitos-images-v2';
 const IMAGE_LIMIT = 60; // las respuestas de otros dominios ocupan cuota de sobra: se limita
