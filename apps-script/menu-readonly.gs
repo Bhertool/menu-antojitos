@@ -1,8 +1,9 @@
 // apps-script/menu-readonly.gs
-// Endpoint público 100% de solo lectura para el menú QR
+// Endpoint público 100% de solo lectura para el menú QR y estado de horarios
 
-const SHEET_NAME = 'Menu';
-const CACHE_KEY = 'ANTOJITOS_MENU_PUBLIC_V1';
+const MENU_SHEET = 'Menu';
+const SCHEDULE_SHEET = 'Horarios';
+const CACHE_KEY = 'ANTOJITOS_MENU_PUBLIC_V2';
 const CACHE_TTL_SECONDS = 300; // 5 minutos
 
 function doGet(e) {
@@ -17,7 +18,7 @@ function doGet(e) {
   }
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(SHEET_NAME);
+  const sheet = ss.getSheetByName(MENU_SHEET);
   if (!sheet) {
     return jsonResponse({ ok: false, error: 'No se encontró la pestaña Menu' });
   }
@@ -50,15 +51,47 @@ function doGet(e) {
       };
     });
 
+  const schedule = readSchedule(ss);
+
   const payload = {
     ok: true,
     updatedAt: new Date().toISOString(),
     total: items.length,
-    items
+    items,
+    schedule
   };
 
   cache.put(CACHE_KEY, JSON.stringify(payload), CACHE_TTL_SECONDS);
   return jsonResponse(payload);
+}
+
+function readSchedule(ss) {
+  const sheet = ss.getSheetByName(SCHEDULE_SHEET);
+  if (!sheet) return null;
+
+  const formatTime = val => {
+    if (!val) return '';
+    if (val instanceof Date) {
+      return Utilities.formatDate(val, 'America/Bogota', 'HH:mm');
+    }
+    return String(val).trim();
+  };
+
+  const dayRows = sheet.getRange('A2:E8').getValues();
+  const dias = dayRows
+    .filter(r => r[1])
+    .map(r => ({
+      dia_num: Number(r[0]),
+      dia: String(r[1]).trim(),
+      abierto: r[2] === true || String(r[2]).toUpperCase() === 'TRUE',
+      apertura: formatTime(r[3]),
+      cierre: formatTime(r[4])
+    }));
+
+  const modo = String(sheet.getRange('B11').getValue() || 'AUTO').trim().toUpperCase();
+  const mensaje = String(sheet.getRange('B12').getValue() || '').trim();
+
+  return { modo, mensaje, dias };
 }
 
 function jsonResponse(data) {

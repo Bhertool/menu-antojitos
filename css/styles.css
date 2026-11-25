@@ -46,7 +46,7 @@ body {
         width: 48px;
         height: 48px;
         border-radius: 50%;
-        object-fit: cover;
+        object-fit: contain;
         border: 1.5px solid var(--border-subtle);
         flex-shrink: 0;
     }
@@ -249,6 +249,7 @@ body {
 
 .menu-item__name {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.35rem;
     font-size: 0.94rem;
@@ -496,6 +497,7 @@ body {
 
 .sheet__meta {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 0.45rem;
@@ -507,6 +509,19 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--accent);
+}
+
+.badge-featured {
+    display: inline-block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.14rem 0.5rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    line-height: 1.3;
 }
 
 .badge-status {
@@ -681,6 +696,48 @@ body {
 
     .wisp {
         opacity: 0.16;
+    }
+}
+
+/* Estado Abierto / Cerrado según pestaña Horarios */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    margin-top: 0.42rem;
+    padding: 0.24rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--ink-secondary);
+}
+
+.status-pill__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-pill.is-open {
+    border-color: color-mix(in oklch, oklch(0.62 0.15 150) 35%, transparent);
+    background: color-mix(in oklch, oklch(0.62 0.15 150) 12%, var(--bg-surface));
+    color: light-dark(oklch(0.38 0.12 150), oklch(0.80 0.12 150));
+
+    & .status-pill__dot {
+        background: oklch(0.64 0.17 150);
+    }
+}
+
+.status-pill.is-closed {
+    border-color: color-mix(in oklch, var(--danger) 30%, transparent);
+    background: color-mix(in oklch, var(--danger) 10%, var(--bg-surface));
+    color: var(--danger);
+
+    & .status-pill__dot {
+        background: var(--danger);
     }
 }
 

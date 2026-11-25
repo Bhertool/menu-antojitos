@@ -11,7 +11,7 @@
  */
 const VERSION = 'v1';
 const SHELL_CACHE = `antojitos-shell-${VERSION}`;
-const IMAGE_CACHE = 'antojitos-images-v1';
+const IMAGE_CACHE = 'antojitos-images-v2';
 const IMAGE_LIMIT = 60; // las respuestas de otros dominios ocupan cuota de sobra: se limita
 
 const SHELL = [

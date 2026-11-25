@@ -7,7 +7,8 @@ try {
     const raw = localStorage.getItem(CONFIG.CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed.items) ? parsed.items : null;
+    if (!Array.isArray(parsed.items)) return null;
+    return { items: parsed.items, schedule: parsed.schedule || null };
 } catch {
     return null;
 }
@@ -43,14 +44,19 @@ if (!data.ok || !Array.isArray(data.items)) {
     throw new Error(data.error || 'Respuesta inválida del servidor');
 }
 
+const payload = {
+    items: data.items,
+    schedule: data.schedule || null
+};
+
 try {
     localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify({
     savedAt: Date.now(),
-    items: data.items
+    ...payload
     }));
 } catch {
     // Ignorar si el almacenamiento local está restringido
 }
 
-return data.items;
+return payload;
 }

@@ -4,6 +4,7 @@ import {
     renderCategories,
     renderMenu,
     renderError,
+    renderStoreStatus,
     openDetailSheet,
     showToast
 } from './ui.js';
@@ -12,6 +13,7 @@ import { initOrder } from './order.js';
 
 const state = {
     items: [],
+    schedule: null,
     activeCategory: 'Todos',
     query: ''
 };
@@ -20,6 +22,7 @@ const els = {
     brandLogo: document.querySelector('#brandLogo'),
     brandName: document.querySelector('#brandName'),
     brandTagline: document.querySelector('#brandTagline'),
+    storeStatus: document.querySelector('#storeStatus'),
     nequiNumber: document.querySelector('#nequiNumber'),
     nequiHolder: document.querySelector('#nequiHolder'),
     copyNequiBtn: document.querySelector('#copyNequiBtn'),
@@ -50,9 +53,12 @@ function initBranding() {
     els.instagramLink.href = b.instagramUrl;
 
     if (b.logoUrl) {
-        els.brandLogo.src = b.logoUrl;
         els.brandLogo.onload = () => { els.brandLogo.hidden = false; };
         els.brandLogo.onerror = () => { els.brandLogo.hidden = true; };
+        els.brandLogo.src = b.logoUrl;
+        if (els.brandLogo.complete && els.brandLogo.naturalWidth > 0) {
+            els.brandLogo.hidden = false;
+        }
     }
 }
 
@@ -130,7 +136,9 @@ function updateView(useTransition = false) {
 async function refreshLive() {
     try {
         const live = await fetchLiveMenu();
-        state.items = live;
+        state.items = live.items;
+        state.schedule = live.schedule;
+        renderStoreStatus(els.storeStatus, state.schedule);
         updateView(false);
         if (order) order.refresh();
     } catch (err) {
@@ -149,8 +157,10 @@ async function refreshLive() {
 
 async function loadData() {
     const cached = readCachedMenu();
-    if (cached && cached.length) {
-        state.items = cached;
+    if (cached && cached.items.length) {
+        state.items = cached.items;
+        state.schedule = cached.schedule;
+        renderStoreStatus(els.storeStatus, state.schedule);
         updateView(false);
         if (order) order.refresh();
     }
@@ -204,3 +214,6 @@ order = initOrder({
 initInteractions();
 registerServiceWorker();
 loadData();
+setInterval(() => {
+    if (state.schedule) renderStoreStatus(els.storeStatus, state.schedule);
+}, 60000);

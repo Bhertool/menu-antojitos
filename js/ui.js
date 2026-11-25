@@ -10,6 +10,90 @@ export function formatCOP(value) {
     return copFormatter.format(Number(value) || 0);
 }
 
+function parseMinutes(hhmm) {
+    const [h, m] = String(hhmm || '').split(':').map(Number);
+    if (Number.isNaN(h)) return null;
+    return h * 60 + (m || 0);
+}
+
+function format12h(hhmm) {
+    const mins = parseMinutes(hhmm);
+    if (mins === null) return '';
+    const h24 = Math.floor(mins / 60) % 24;
+    const m = mins % 60;
+    const suffix = h24 >= 12 ? 'p. m.' : 'a. m.';
+    const h12 = h24 % 12 || 12;
+    return `${h12}:${String(m).padStart(2, '0')} ${suffix}`;
+}
+
+export function renderStoreStatus(el, schedule) {
+    if (!el || !schedule) return;
+
+    const setPill = (isOpen, text) => {
+        el.hidden = false;
+        el.className = `status-pill ${isOpen ? 'is-open' : 'is-closed'}`;
+        el.innerHTML = '<span class="status-pill__dot" aria-hidden="true"></span><span></span>';
+        el.querySelector('span:last-child').textContent = text;
+    };
+
+    if (schedule.modo === 'ABIERTO') {
+        setPill(true, schedule.mensaje ? `Abierto · ${schedule.mensaje}` : 'Abierto ahora');
+        return;
+    }
+    if (schedule.modo === 'CERRADO') {
+        setPill(false, schedule.mensaje ? `Cerrado · ${schedule.mensaje}` : 'Cerrado hoy');
+        return;
+    }
+
+    const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Bogota',
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    }).formatToParts(new Date());
+
+    const dayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    const todayNum = dayMap[parts.find(p => p.type === 'weekday')?.value];
+    const hour = Number(parts.find(p => p.type === 'hour')?.value || 0) % 24;
+    const minute = Number(parts.find(p => p.type === 'minute')?.value || 0);
+    const nowMins = hour * 60 + minute;
+
+    const daysByNum = new Map((schedule.dias || []).map(d => [Number(d.dia_num), d]));
+    const today = daysByNum.get(todayNum);
+
+    if (today && today.abierto) {
+        const openM = parseMinutes(today.apertura);
+        const closeM = parseMinutes(today.cierre);
+        if (openM !== null && closeM !== null) {
+            const crossesMidnight = closeM <= openM;
+            const isOpen = crossesMidnight
+                ? (nowMins >= openM || nowMins < closeM)
+                : (nowMins >= openM && nowMins < closeM);
+
+            if (isOpen) {
+                setPill(true, `Abierto · Hasta ${format12h(today.cierre)}`);
+                return;
+            }
+            if (nowMins < openM) {
+                setPill(false, `Cerrado · Abrimos hoy ${format12h(today.apertura)}`);
+                return;
+            }
+        }
+    }
+
+    for (let offset = 1; offset <= 7; offset++) {
+        const next = daysByNum.get((todayNum + offset) % 7);
+        if (next && next.abierto && next.apertura) {
+            const labelDia = offset === 1 ? 'mañana' : next.dia.slice(0, 3).toLowerCase();
+            setPill(false, `Cerrado · Abrimos ${labelDia} ${format12h(next.apertura)}`);
+            return;
+        }
+    }
+
+    setPill(false, schedule.mensaje ? `Cerrado · ${schedule.mensaje}` : 'Cerrado');
+}
+
 export function renderCategories(stripEl, categories, activeCategory, onSelect) {
     const allCats = ['Todos', ...categories];
     stripEl.replaceChildren();
@@ -102,12 +186,11 @@ export function renderMenu(containerEl, items, handlers) {
             nameRow.className = 'menu-item__name';
             nameRow.textContent = item.nombre;
 
-            if (item.destacado) {
-                const star = document.createElement('span');
-                star.className = 'star-dot';
-                star.textContent = '★';
-                star.title = 'Recomendado';
-                nameRow.appendChild(star);
+            if (item.destacado && item.disponible) {
+                const badge = document.createElement('span');
+                badge.className = 'badge-featured';
+                badge.textContent = 'Recomendado';
+                nameRow.appendChild(badge);
             }
 
             info.appendChild(nameRow);
@@ -130,7 +213,7 @@ export function renderMenu(containerEl, items, handlers) {
             if (!item.disponible) {
                 const sold = document.createElement('span');
                 sold.className = 'menu-item__soldout';
-                sold.textContent = 'Agotado';
+                sold.textContent = 'Agotado hoy';
                 right.appendChild(sold);
             }
 
@@ -182,6 +265,7 @@ export function openDetailSheet(dialogEl, item, onAdd) {
     const media = dialogEl.querySelector('#sheetMedia');
     const img = dialogEl.querySelector('#sheetImg');
     const cat = dialogEl.querySelector('#sheetCategory');
+    const featured = dialogEl.querySelector('#sheetFeatured');
     const status = dialogEl.querySelector('#sheetStatus');
     const title = dialogEl.querySelector('#sheetTitle');
     const price = dialogEl.querySelector('#sheetPrice');
@@ -197,6 +281,7 @@ export function openDetailSheet(dialogEl, item, onAdd) {
     cat.textContent = item.categoria;
     title.textContent = item.nombre;
     price.textContent = formatCOP(item.precio);
+    if (featured) featured.hidden = !(item.destacado && item.disponible);
     status.hidden = item.disponible;
 
     // Foto completa, o placeholder si no hay foto / no cargó
